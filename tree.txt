@@ -1,0 +1,26 @@
+Project Structure:
+
+PYTHON AUDIO TO ARDUINO VISUALIZER
+.
+├── arduino_usb_to_led
+│   └── arduino_usb_to_led.ino
+├── LICENSE
+├── makefile
+├── pyproject.toml
+├── README.md
+├── src
+│   └── sound_to_usb_serial
+│       ├── audio_analyzer.py
+│       ├── config.py
+│       ├── __init__.py
+│       ├── list_devices.py
+│       ├── list_ports.py
+│       ├── main.py
+│       └── ro_audio.py
+├── tree.txt
+└── uv.lock
+
+4 directories, 14 files
+
+Generated on Cts 29 Ağu 2026 21:57:04 +03
+
