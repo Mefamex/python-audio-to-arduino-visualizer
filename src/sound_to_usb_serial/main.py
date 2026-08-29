@@ -15,6 +15,9 @@ from sound_to_usb_serial.list_ports import init_port, print_ports
 from sound_to_usb_serial.ro_audio import open_audio, read_audio_chunk
 
 
+RETRY_DELAYS = [3, 5, 10, 30, 60]  # seconds
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="PulseAudio music visualizer for three Arduino LEDs"
@@ -111,6 +114,7 @@ def run(
             process.wait(timeout=1)
 
 
+
 def main() -> None:
     args = parse_args()
 
@@ -122,8 +126,55 @@ def main() -> None:
         print_ports()
         return
 
-    port, device = initialize_system(args.port, args.device)
-    run(port, device, args.sample_rate, args.chunk_size, args.baud_rate)
+    # 1. Device Initialization (Executes once and caches the selection)
+    try:
+        port, device = initialize_system(args.port, args.device)
+    except KeyboardInterrupt:
+        print("\n[INFO] Initialization aborted by user.")
+        sys.exit(0)
+
+    # 2. Auto-Recovery Configuration (Exponential Backoff)
+    retry_delays = RETRY_DELAYS
+    retry_count = 0
+
+    # 3. Fault-Tolerant Main Loop
+    while True:
+        start_time = time.time()
+        try:
+            print(f"\nConnecting... Port: {port} | Device: {device}")
+            
+            # Execute the main workflow (Runs continuously until an exception is raised)
+            run(port, device, args.sample_rate, args.chunk_size, args.baud_rate)
+            
+            # Exit the loop if run() finishes gracefully without exceptions
+            break
+
+        except KeyboardInterrupt:
+            print("\n[INFO] User requested exit (Ctrl+C). Shutting down...")
+            sys.exit(0)
+
+        except (Exception, SystemExit) as e:
+            # Ignore successful manual exits
+            if isinstance(e, SystemExit) and e.code == 0:
+                sys.exit(0)
+
+            # Uptime Check: If the system remained stable for over 10 seconds,
+            # consider it a fresh disconnect and reset the retry counter.
+            if time.time() - start_time > 10:
+                retry_count = 0
+
+            # Extract the underlying error (since run() wraps exceptions in SystemExit)
+            actual_error = getattr(e, "__cause__", e) or e
+            print(f"\n[ERROR] Connection lost or process failed: {actual_error}")
+
+            if retry_count < len(retry_delays):
+                wait_time = retry_delays[retry_count]
+                print(f"🔄 Retrying with cached settings in {wait_time}s... (Attempt {retry_count + 1}/{len(retry_delays)})")
+                time.sleep(wait_time)
+                retry_count += 1
+            else:
+                print("\n[FATAL] Maximum retry limit reached. Target device unreachable. Exiting.")
+                sys.exit(1)
 
 
 if __name__ == "__main__":
