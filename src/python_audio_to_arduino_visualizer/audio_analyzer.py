@@ -7,15 +7,9 @@ class AudioAnalyzer:
 
     def __init__(self, sample_rate: int, chunk_size: int) -> None:
         self.filters = (
-            signal.butter(
-                2, (50.0, 100.0), btype="bandpass", fs=sample_rate, output="sos"
-            ),
-            signal.butter(
-                2, (100.0, 300.0), btype="bandpass", fs=sample_rate, output="sos"
-            ),
-            signal.butter(
-                4, (5000.0, 7000.0), btype="bandpass", fs=sample_rate, output="sos"
-            ),
+            signal.butter(2, (50.0, 100.0), btype="bandpass", fs=sample_rate, output="sos"),
+            signal.butter(2, (100.0, 300.0), btype="bandpass", fs=sample_rate, output="sos"),
+            signal.butter(4, (5000.0, 7000.0), btype="bandpass", fs=sample_rate, output="sos"),
         )
         self.filter_states = tuple(signal.sosfilt_zi(f) * 0.0 for f in self.filters)
 
@@ -28,9 +22,7 @@ class AudioAnalyzer:
         self.prev_rms_sum = 0.0
         self.activeness_score = 0.0
 
-    def apply_smoothing_and_gamma(
-        self, target_values: list[int], smoothing_factor: float
-    ) -> list[int]:
+    def apply_smoothing_and_gamma(self, target_values: list[int], smoothing_factor: float) -> list[int]:
         """Apply exponential moving average smoothing and gamma correction."""
         final_values = []
         for i in range(3):
@@ -74,14 +66,8 @@ class AudioAnalyzer:
         total_max_rms = sum(self.max_rms)
         relative_change = delta_rms / (total_max_rms + 1e-6)
 
-        self.activeness_score = (0.05 * relative_change) + (
-            0.95 * self.activeness_score
-        )
-        dynamic_smoothing = float(
-            np.clip(0.1 + (self.activeness_score * 2.5), 0.1, 0.85)
-        )
+        self.activeness_score = (0.05 * relative_change) + (0.95 * self.activeness_score)
+        dynamic_smoothing = float(np.clip(0.1 + (self.activeness_score * 2.5), 0.1, 0.85))
 
-        smoothed_values = self.apply_smoothing_and_gamma(
-            brightness_values, dynamic_smoothing
-        )
+        smoothed_values = self.apply_smoothing_and_gamma(brightness_values, dynamic_smoothing)
         return tuple([255] + smoothed_values)  # type: ignore[return-value]

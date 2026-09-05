@@ -10,9 +10,7 @@ def list_devices() -> list[str]:
         check=False,
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Failed to list PulseAudio sources: {result.stderr.strip()}"
-        )
+        raise RuntimeError(f"Failed to list PulseAudio sources: {result.stderr.strip()}")
 
     devices = []
     for line in result.stdout.splitlines():

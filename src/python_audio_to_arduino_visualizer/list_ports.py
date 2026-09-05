@@ -5,9 +5,7 @@ import serial.tools.list_ports
 def list_ports() -> list[str]:
     """Retrieve a list of valid Arduino serial ports."""
     ports = serial.tools.list_ports.comports()
-    valid_ports = [
-        port.device for port in ports if "ttyU" in port.device or "ttyA" in port.device
-    ]
+    valid_ports = [port.device for port in ports if "ttyU" in port.device or "ttyA" in port.device]
     return sorted(valid_ports)
 
 

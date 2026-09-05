@@ -8,26 +8,19 @@ import time
 import numpy as np
 import serial
 
-from sound_to_usb_serial import config
-from sound_to_usb_serial.audio_analyzer import AudioAnalyzer
-from sound_to_usb_serial.list_devices import init_device, print_devices
-from sound_to_usb_serial.list_ports import init_port, print_ports
-from sound_to_usb_serial.ro_audio import open_audio, read_audio_chunk
-
+from python_audio_to_arduino_visualizer import config
+from python_audio_to_arduino_visualizer.audio_analyzer import AudioAnalyzer
+from python_audio_to_arduino_visualizer.list_devices import init_device, print_devices
+from python_audio_to_arduino_visualizer.list_ports import init_port, print_ports
+from python_audio_to_arduino_visualizer.ro_audio import open_audio, read_audio_chunk
 
 RETRY_DELAYS = [3, 5, 10, 30, 60]  # seconds
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="PulseAudio music visualizer for three Arduino LEDs"
-    )
-    parser.add_argument(
-        "--port", default=config.SERIAL_PORT, help="Arduino serial port"
-    )
-    parser.add_argument(
-        "--device", default=config.DEVICE_NAME, help="PulseAudio monitor source"
-    )
+    parser = argparse.ArgumentParser(description="PulseAudio music visualizer for three Arduino LEDs")
+    parser.add_argument("--port", default=config.SERIAL_PORT, help="Arduino serial port")
+    parser.add_argument("--device", default=config.DEVICE_NAME, help="PulseAudio monitor source")
     parser.add_argument(
         "--sample-rate",
         type=int,
@@ -46,12 +39,8 @@ def parse_args() -> argparse.Namespace:
         default=config.BAUD_RATE,
         help="Arduino serial baud rate (default: 115200)",
     )
-    parser.add_argument(
-        "--list-devices", action="store_true", help="List PulseAudio sources and exit"
-    )
-    parser.add_argument(
-        "--list-ports", action="store_true", help="List Arduino serial ports and exit"
-    )
+    parser.add_argument("--list-devices", action="store_true", help="List PulseAudio sources and exit")
+    parser.add_argument("--list-ports", action="store_true", help="List Arduino serial ports and exit")
     return parser.parse_args()
 
 
@@ -75,9 +64,7 @@ def initialize_system(args_port: str, args_device: str) -> tuple[str, str]:
     return port, device
 
 
-def run(
-    port: str, device: str, sample_rate: int, chunk_size: int, baud_rate: int
-) -> None:
+def run(port: str, device: str, sample_rate: int, chunk_size: int, baud_rate: int) -> None:
     print(f"Connecting to port {port}...")
     process: subprocess.Popen[bytes] | None = None
 
@@ -114,7 +101,6 @@ def run(
             process.wait(timeout=1)
 
 
-
 def main() -> None:
     args = parse_args()
 
@@ -142,10 +128,10 @@ def main() -> None:
         start_time = time.time()
         try:
             print(f"\nConnecting... Port: {port} | Device: {device}")
-            
+
             # Execute the main workflow (Runs continuously until an exception is raised)
             run(port, device, args.sample_rate, args.chunk_size, args.baud_rate)
-            
+
             # Exit the loop if run() finishes gracefully without exceptions
             break
 
@@ -169,7 +155,9 @@ def main() -> None:
 
             if retry_count < len(retry_delays):
                 wait_time = retry_delays[retry_count]
-                print(f"🔄 Retrying with cached settings in {wait_time}s... (Attempt {retry_count + 1}/{len(retry_delays)})")
+                print(
+                    f"🔄 Retrying with cached settings in {wait_time}s... (Attempt {retry_count + 1}/{len(retry_delays)})"
+                )
                 time.sleep(wait_time)
                 retry_count += 1
             else:
