@@ -6,6 +6,7 @@
 | LICENSE :   | MIT        |
 | CREATED :   | 2024-07-18 |
 | PUBLISHED : | 2026-08-29 |
+| UPDATED :   | 2026-09-05 |
 
 A high-performance, lag-free music visualizer that captures system audio via PulseAudio and drives 3-channel LEDs using an Arduino.
 
@@ -35,7 +36,7 @@ Instead of relying on basic volume triggers, this tool uses digital signal proce
 | **Operating System** | Linux (Uses PulseAudio subsystem).                         |
 | **PulseAudio**       | For capturing system audio.                                |
 | **System Packages**  | `pulseaudio-utils` (for `parec` & `pactl`).                |
-| **Python**           | Python 3.12 or higher.                                     |
+| **Python**           | Python 3.14 or higher.                                |
 | **Package Manager**  | [uv](https://github.com/astral-sh/uv) (Lightning-fast PM). |
 | **Make**             | For automating installation and running the visualizer.    |
 
@@ -70,22 +71,22 @@ make run
 You can also run it in a single command by passing arguments directly:
 
 ```bash
-uv run sound-to-usb-serial --port /dev/ttyUSB0 --device alsa_output.pci-0000.analog-stereo.monitor
+uv run python-audio-to-arduino-visualizer --port /dev/ttyUSB0 --device alsa_output.pci-0000.analog-stereo.monitor
 
 ```
 
 **Helpful Commands:**
 
-* `uv run sound-to-usb-serial --list-ports` (Find your Arduino port)
-* `uv run sound-to-usb-serial --list-devices` (Find your audio monitor)
-* `uv run sound-to-usb-serial --help` (View all configuration flags like sample rate and chunk size)
+* `uv run python-audio-to-arduino-visualizer --list-ports` (Find your Arduino port)
+* `uv run python-audio-to-arduino-visualizer --list-devices` (Find your audio monitor)
+* `uv run python-audio-to-arduino-visualizer --help` (View all configuration flags like sample rate and chunk size)
 
 <br><br>
 
 
 ## Configuration & Customization
 
-You can permanently bypass the interactive prompts or tweak the core DSP settings by editing the `src/sound_to_usb_serial/config.py` file.
+You can permanently bypass the interactive prompts or tweak the core DSP settings by editing the `src/python_audio_to_arduino_visualizer/config.py` file.
 
 ```python
 SERIAL_PORT = "/dev/ttyUSB0"  # Set your default Arduino port
@@ -93,6 +94,11 @@ DEVICE_NAME = "alsa_output.pci-0000_00_1f.3.analog-stereo.monitor" # Set default
 BAUD_RATE = 115200            # Serial communication speed
 SAMPLE_RATE = 16000           # Lightweight audio sampling rate
 CHUNK_SIZE = 300              # Buffer size for FPS rendering (~50 FPS)
+
+# LED smoothing / flash speed
+SMOOTHING_MIN = 0.1           # Calm floor: how smooth LEDs stay during silence
+SMOOTHING_SCALE = 2.5         # Sensitivity: how fast smoothing ramps with activeness
+SMOOTHING_MAX = 0.85          # Speed ceiling: sharpest flashes on loud parts
 
 ```
 
@@ -110,28 +116,31 @@ Note:
 `make tree`
 
 ```text
+Project Structure:
+
 PYTHON AUDIO TO ARDUINO VISUALIZER
 .
-├── arduino_usb_to_led         # Arduino firmware directory
-│   └── arduino_usb_to_led.ino # C++ sketch for high-speed serial parsing & PWM output
-├── makefile                   # Shortcut commands for setup, formatting, and execution
-├── pyproject.toml             # Python project metadata, dependencies, and CLI configs
-├── README.md                  # Project documentation
-├── src                        # Main source code directory
-│   └── sound_to_usb_serial    # Core Python package
-│       ├── audio_analyzer.py  # DSP logic: frequency filtering, AGC, and EMA smoothing
-│       ├── config.py          # Centralized configuration variables (port, sample rate)
-│       ├── __init__.py        # Package initialization and versioning
-│       ├── list_devices.py    # PulseAudio source discovery, validation, and selection
-│       ├── list_ports.py      # Arduino serial port discovery and validation
-│       ├── main.py            # CLI entry point, arg parsing, and main execution loop
-│       └── ro_audio.py        # Audio subprocess handling (parec) and chunk reading
-├── tree.txt                   # Auto-generated directory structure record
-└── uv.lock                    # Strict dependency lockfile for reproducible environments
+├── arduino_usb_to_led
+│   └── arduino_usb_to_led.ino
+├── LICENSE
+├── makefile
+├── pyproject.toml
+├── README.md
+├── src
+│   └── python_audio_to_arduino_visualizer
+│       ├── audio_analyzer.py
+│       ├── config.py
+│       ├── __init__.py
+│       ├── list_devices.py
+│       ├── list_ports.py
+│       ├── main.py
+│       └── ro_audio.py
+├── tree.txt
+└── uv.lock
 
-4 directories, 13 files
+4 directories, 14 files
 
-Generated on Cts 29 Ağu 2026 21:48:33 +03
+Generated on 2026-09-05 08:33:53
 ```
 
 <br><br>
