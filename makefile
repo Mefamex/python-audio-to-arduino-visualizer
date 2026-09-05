@@ -45,6 +45,6 @@ tree: ## Generates a clean directory tree structure text file
 	@echo "PYTHON AUDIO TO ARDUINO VISUALIZER" >> tree.txt
 	@tree -I '.venv|__pycache__|.git|*.egg-info' >> tree.txt
 	@echo "" >> tree.txt
-	@echo "Generated on $$(date)" >> tree.txt
+	@echo "Generated on $$(date '+%Y-%m-%d %H:%M:%S')" >> tree.txt
 	@echo "" >> tree.txt
 	@cat tree.txt
