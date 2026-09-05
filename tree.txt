@@ -9,7 +9,7 @@ PYTHON AUDIO TO ARDUINO VISUALIZER
 ├── pyproject.toml
 ├── README.md
 ├── src
-│   └── sound_to_usb_serial
+│   └── python_audio_to_arduino_visualizer
 │       ├── audio_analyzer.py
 │       ├── config.py
 │       ├── __init__.py
@@ -22,5 +22,5 @@ PYTHON AUDIO TO ARDUINO VISUALIZER
 
 4 directories, 14 files
 
-Generated on Cts 29 Ağu 2026 21:57:04 +03
+Generated on Cts 05 Eyl 2026 08:02:48 +03
 
