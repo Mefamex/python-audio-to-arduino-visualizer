@@ -21,4 +21,5 @@ venv.bak/
 # UV / Hatch
 dist/
 build/
+.ruff_cache/
 *.egg-info/
