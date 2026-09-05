@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import signal
 
+from python_audio_to_arduino_visualizer import config
+
 
 class AudioAnalyzer:
     """Convert three frequency bands into Arduino PWM brightness values."""
@@ -67,7 +69,14 @@ class AudioAnalyzer:
         relative_change = delta_rms / (total_max_rms + 1e-6)
 
         self.activeness_score = (0.05 * relative_change) + (0.95 * self.activeness_score)
-        dynamic_smoothing = float(np.clip(0.1 + (self.activeness_score * 2.5), 0.1, 0.85))
+        dynamic_smoothing = float(
+            np.clip(
+                config.SMOOTHING_MIN + (self.activeness_score * config.SMOOTHING_SCALE),
+                config.SMOOTHING_MIN,
+                config.SMOOTHING_MAX,
+            )
+        )
+        print(dynamic_smoothing)
 
         smoothed_values = self.apply_smoothing_and_gamma(brightness_values, dynamic_smoothing)
         return tuple([255] + smoothed_values)  # type: ignore[return-value]
