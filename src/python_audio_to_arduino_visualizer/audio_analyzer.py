@@ -76,7 +76,6 @@ class AudioAnalyzer:
                 config.SMOOTHING_MAX,
             )
         )
-        print(dynamic_smoothing)
 
         smoothed_values = self.apply_smoothing_and_gamma(brightness_values, dynamic_smoothing)
         return tuple([255] + smoothed_values)  # type: ignore[return-value]
