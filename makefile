@@ -33,7 +33,7 @@ clean: ## Removes cached files to reset the environment
 	@echo ""
 	@echo "CLEANING UP THE ENVIRONMENT..."
 	@echo ""
-	rm -rf .venv dist build .ruff_cache
+	rm -rf dist build .ruff_cache
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 tree: ## Generates a clean directory tree structure text file
