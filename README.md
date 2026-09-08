@@ -6,11 +6,13 @@
 | LICENSE :   | MIT        |
 | CREATED :   | 2024-07-18 |
 | PUBLISHED : | 2026-08-29 |
-| UPDATED :   | 2026-09-05 |
+| UPDATED :   | 2026-09-08 |
 
 A high-performance, lag-free music visualizer that captures system audio via PulseAudio and drives 3-channel LEDs using an Arduino.
 
 Instead of relying on basic volume triggers, this tool uses digital signal processing (DSP) to separate audio into precise frequency bands, delivering a club-standard, visually pleasing light show right on your desk.
+
+
 
 <br><br>
 
@@ -20,12 +22,16 @@ Instead of relying on basic volume triggers, this tool uses digital signal proce
 * **Cinematic Smoothing:** Built-in Exponential Moving Average (EMA) and Gamma Correction prevent harsh flickering and align LED brightness with human eye perception.
 * **Bulletproof Serial Sync:** Uses a non-blocking `255` sync-byte protocol. Zero serial desync, no channel bleeding, and minimal CPU footprint.
 
+
+
 <br><br>
 
 ## Hardware Setup
 1. Any Arduino board (Uno, Nano, etc.).
 2. 3 LEDs (or LED strips powered via MOSFETs) connected to PWM-supported pins: **9, 10, and 11**.
 3. A Linux environment running PulseAudio.
+
+
 
 <br><br>
 
@@ -40,19 +46,20 @@ Instead of relying on basic volume triggers, this tool uses digital signal proce
 | **Package Manager**  | [uv](https://github.com/astral-sh/uv) (Lightning-fast PM). |
 | **Make**             | For automating installation and running the visualizer.    |
 
+
+
 <br><br>
 
 ## Installation
-This project relies on `uv` for lightning-fast dependency management and environment isolation.
 
-```bash
-git clone https://github.com/mefamex/python-audio-to-arduino-visualizer.git
-cd python-audio-to-arduino-visualizer
+See **[INSTALL.md](INSTALL.md)** — clone + `make install` (create the virtual environment and sync dependencies with `uv`).
 
-# Automatically create the virtual environment and sync dependencies
-make install
 
-```
+> **For the curious:** wonder how this project was first built from an empty
+> directory — `uv init`, adding the libraries one by one, and all the rest?
+> That's written up in **[SETUP.md](SETUP.md)**.
+
+
 
 <br><br>
 
@@ -120,12 +127,15 @@ Project Structure:
 
 PYTHON AUDIO TO ARDUINO VISUALIZER
 .
+├── AGENTS.md
 ├── arduino_usb_to_led
 │   └── arduino_usb_to_led.ino
+├── INSTALL.md
 ├── LICENSE
 ├── makefile
 ├── pyproject.toml
 ├── README.md
+├── SETUP.md
 ├── src
 │   └── python_audio_to_arduino_visualizer
 │       ├── audio_analyzer.py
@@ -138,9 +148,9 @@ PYTHON AUDIO TO ARDUINO VISUALIZER
 ├── tree.txt
 └── uv.lock
 
-4 directories, 14 files
+4 directories, 17 files
 
-Generated on 2026-09-05 08:33:53
+Generated on 2026-09-08 03:44:34
 ```
 
 <br><br>
@@ -148,15 +158,6 @@ Generated on 2026-09-05 08:33:53
 ## License
 
 Distributed under the MIT License. Developed by [Mefamex](https://www.mefamex.com).
-
-
-
-
-
-
-
-
-
 
 
 
