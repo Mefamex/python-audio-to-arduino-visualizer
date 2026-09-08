@@ -36,5 +36,5 @@ DEVICE_NAME = (
 #   ~0.70  -> snappy, clearly tracks every beat
 #   ~0.85+ -> maximum: sharp, jittery flashes on loud beats
 SMOOTHING_MIN = 0.1
-SMOOTHING_SCALE = 5
+SMOOTHING_SCALE = 2.5
 SMOOTHING_MAX = 0.85
