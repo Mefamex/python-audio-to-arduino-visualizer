@@ -98,7 +98,11 @@ def run(port: str, device: str, sample_rate: int, chunk_size: int, baud_rate: in
     finally:
         if process is not None:
             process.terminate()
-            process.wait(timeout=1)
+            try:
+                process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
 
 
 def main() -> None:
