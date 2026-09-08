@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: install lint format build run clean tree help
+.PHONY: install build run clean tree help
 
 help: ## Show this help message
 	@echo "Usage: make [command]"
@@ -10,18 +10,8 @@ help: ## Show this help message
 install: ## Creates the virtual environment and installs dependencies automatically
 	uv sync
 
-lint: ## Lints the Python source files with ruff
-	uvx ruff check src/
-
 run: ## Executes the program safely using uv's environment awareness
 	uv run python-audio-to-arduino-visualizer
-
-format: ## Auto-formats your Python files using the industry-standard ruff formatter
-	@echo ""
-	@echo "FORMATTING PYTHON FILES..."
-	@echo ""
-	uvx ruff check --fix src/
-	uvx ruff format src/
 
 build: ## Builds the package into dist/ with uv build
 	@echo ""
@@ -33,7 +23,7 @@ clean: ## Removes cached files to reset the environment
 	@echo ""
 	@echo "CLEANING UP THE ENVIRONMENT..."
 	@echo ""
-	rm -rf dist build .ruff_cache
+	rm -rf dist build
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 tree: ## Generates a clean directory tree structure text file
