@@ -18,8 +18,7 @@ venv.bak/
 .idea/
 *.DS_Store
 
-# UV / Hatch
+# UV
 dist/
 build/
-.ruff_cache/
 *.egg-info/
