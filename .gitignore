@@ -22,3 +22,9 @@ venv.bak/
 dist/
 build/
 *.egg-info/
+
+# Local tooling
+.graphify/
+graphify-out/
+.ruff_cache/
+.ruff_cache
