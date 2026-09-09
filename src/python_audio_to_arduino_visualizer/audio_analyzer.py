@@ -28,11 +28,8 @@ class AudioAnalyzer:
         """Apply exponential moving average smoothing and gamma correction."""
         final_values = []
         for i in range(3):
-            # Dynamic EMA Smoothing
-            self.current_brightness[i] = (smoothing_factor * target_values[i]) + (
-                (1.0 - smoothing_factor) * self.current_brightness[i]
-            )
-            # Gamma correction
+            # Dynamic EMA smoothing
+            self.current_brightness[i] = (smoothing_factor * target_values[i]) + ((1.0 - smoothing_factor) * self.current_brightness[i])
             gamma_corrected = (self.current_brightness[i] ** 2) / 254.0
             final_values.append(int(np.clip(gamma_corrected, 0, 254)))
         return final_values
@@ -49,19 +46,16 @@ class AudioAnalyzer:
             current_rms_sum += rms
 
             # Dynamic range compression
-            if rms > self.max_rms[i]:
-                self.max_rms[i] = rms
-            else:
-                self.max_rms[i] *= self.decay_rate
+            if rms > self.max_rms[i]: self.max_rms[i] = rms
+            else: self.max_rms[i] *= self.decay_rate
             self.max_rms[i] = max(self.max_rms[i], 0.02)
-            # Noise Gate
-            if rms < 0.002:
-                brightness = 0
-            else:
-                brightness = int(np.clip((rms / self.max_rms[i]) * 254.0, 0, 254))
+            # Noise gate
+            if rms < 0.002: brightness = 0
+            else: brightness = int(np.clip((rms / self.max_rms[i]) * 254.0, 0, 254))
             brightness_values.append(brightness)
             updated_states.append(state)
         self.filter_states = tuple(updated_states)
+
         # Activeness calculation
         delta_rms = abs(current_rms_sum - self.prev_rms_sum)
         self.prev_rms_sum = current_rms_sum
@@ -69,13 +63,5 @@ class AudioAnalyzer:
         relative_change = delta_rms / (total_max_rms + 1e-6)
 
         self.activeness_score = (0.05 * relative_change) + (0.95 * self.activeness_score)
-        dynamic_smoothing = float(
-            np.clip(
-                config.SMOOTHING_MIN + (self.activeness_score * config.SMOOTHING_SCALE),
-                config.SMOOTHING_MIN,
-                config.SMOOTHING_MAX,
-            )
-        )
-
-        smoothed_values = self.apply_smoothing_and_gamma(brightness_values, dynamic_smoothing)
-        return tuple([255] + smoothed_values)  # type: ignore[return-value]
+        dynamic_smoothing = float(np.clip(config.SMOOTHING_MIN + (self.activeness_score * config.SMOOTHING_SCALE), config.SMOOTHING_MIN, config.SMOOTHING_MAX))
+        return tuple([255] + self.apply_smoothing_and_gamma(brightness_values, dynamic_smoothing))  # type: ignore[return-value]

@@ -9,17 +9,11 @@ WIDTH = 60
 
 
 def _use_color(stream) -> bool:
-    if os.environ.get("NO_COLOR"):
-        return False
-    if os.environ.get("TERM") == "dumb":
-        return False
-    return stream.isatty()
+    return not (os.environ.get("NO_COLOR") or os.environ.get("TERM") == "dumb") and stream.isatty()
 
 
 def _paint(code: str, text: str, stream) -> str:
-    if not _use_color(stream):
-        return text
-    return f"\033[{code}m{text}\033[0m"
+    return text if not _use_color(stream) else f"\033[{code}m{text}\033[0m"
 
 
 def red(text: str, stream=sys.stderr) -> str:
@@ -58,8 +52,7 @@ def fail(message: str, hint: str = "") -> None:
     sys.stdout.flush()
     mark = red("✖", sys.stderr)
     print(f"\n  {mark} {red(message, sys.stderr)}", file=sys.stderr)
-    if hint:
-        print(f"    {dim('→', sys.stderr)} {dim(hint, sys.stderr)}", file=sys.stderr)
+    if hint: print(f"    {dim('→', sys.stderr)} {dim(hint, sys.stderr)}", file=sys.stderr)
     print(file=sys.stderr)
 
 
@@ -74,15 +67,12 @@ def choose_option(title: str, options: list[str], prompt: str) -> str:
     """Print a colored selection list and return the chosen option."""
     print(f"  {title}:")
     for i, item in enumerate(options, 1):
-        num = cyan(f"{i}.", sys.stdout)
-        print(f"    {num} {item}")
+        print(f"    {cyan(f'{i}.', sys.stdout)} {item}")
     print()
 
     while True:
         try:
-            raw = input(
-                f"  {cyan('›', sys.stdout)} {prompt} (1-{len(options)}): "
-            ).strip()
+            raw = input(f"  {cyan('›', sys.stdout)} {prompt} (1-{len(options)}): ").strip()
         except KeyboardInterrupt, EOFError:
             print()
             raise KeyboardInterrupt from None
