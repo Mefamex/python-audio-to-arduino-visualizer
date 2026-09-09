@@ -6,7 +6,7 @@
 | LICENSE :   | MIT        |
 | CREATED :   | 2024-07-18 |
 | PUBLISHED : | 2026-08-29 |
-| UPDATED :   | 2026-09-08 |
+| UPDATED :   | 2026-09-09 |
 
 A high-performance, lag-free music visualizer that captures system audio via PulseAudio and drives 3-channel LEDs using an Arduino.
 
@@ -107,13 +107,16 @@ SMOOTHING_MIN = 0.1           # Calm floor: how smooth LEDs stay during silence
 SMOOTHING_SCALE = 2.5         # Sensitivity: how fast smoothing ramps with activeness
 SMOOTHING_MAX = 0.85          # Speed ceiling: sharpest flashes on loud parts
 
+# Auto-retry after a disconnection or crash
+RETRY_INTERVAL = 5            # Wait this many seconds between reconnect attempts
+RETRY_TIMEOUT  = 300          # Give up after this many seconds (5 minutes)
 ```
 
 Note:
 - **Empty Values**: If you leave SERIAL_PORT or DEVICE_NAME empty (""), the CLI will automatically prompt you to choose from available devices upon startup.
 - **Safety**: If your configured hardware isn't found, the program won't crash—it will safely catch the error and automatically fall back to the interactive selection menu.
 - **Flexibility**: You can always override the default settings by passing command-line arguments when running the program.
-- **Robustness**: Don't worry about hardcoding an incorrect or disconnected device/port: the system has built-in safety checks.
+- **Robustness**: If the Arduino or audio source drops mid-session, the visualizer retries every `RETRY_INTERVAL` seconds for up to `RETRY_TIMEOUT` seconds, then gives up cleanly. The error output is compact and timestamped, and each failure is labeled so you know whether the Arduino link or the audio source is the problem.
 - **User Experience**: The program is designed to provide a smooth user experience even in the face of unexpected situations.
 
 <br><br>
@@ -127,7 +130,6 @@ Project Structure:
 
 PYTHON AUDIO TO ARDUINO VISUALIZER
 .
-├── AGENTS.md
 ├── arduino_usb_to_led
 │   └── arduino_usb_to_led.ino
 ├── INSTALL.md
@@ -144,13 +146,14 @@ PYTHON AUDIO TO ARDUINO VISUALIZER
 │       ├── list_devices.py
 │       ├── list_ports.py
 │       ├── main.py
-│       └── ro_audio.py
+│       ├── ro_audio.py
+│       └── ui.py
 ├── tree.txt
 └── uv.lock
 
 4 directories, 17 files
 
-Generated on 2026-09-08 03:44:34
+Generated on 2026-09-09 23:19:13
 ```
 
 <br><br>

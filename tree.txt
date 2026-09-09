@@ -2,7 +2,6 @@ Project Structure:
 
 PYTHON AUDIO TO ARDUINO VISUALIZER
 .
-├── AGENTS.md
 ├── arduino_usb_to_led
 │   └── arduino_usb_to_led.ino
 ├── INSTALL.md
@@ -19,11 +18,12 @@ PYTHON AUDIO TO ARDUINO VISUALIZER
 │       ├── list_devices.py
 │       ├── list_ports.py
 │       ├── main.py
-│       └── ro_audio.py
+│       ├── ro_audio.py
+│       └── ui.py
 ├── tree.txt
 └── uv.lock
 
 4 directories, 17 files
 
-Generated on 2026-09-08 03:44:34
+Generated on 2026-09-09 23:19:13
 
