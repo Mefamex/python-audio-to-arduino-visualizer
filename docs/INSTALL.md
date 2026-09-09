@@ -5,12 +5,12 @@ environment and sync dependencies.
 
 ## Prerequisites
 
-|                      |                                                        |
-| -------------------- | ------------------------------------------------------ |
-| **Python**           | 3.14 or higher                                         |
-| **Package Manager**  | [uv](https://github.com/astral-sh/uv)                  |
-| **Make**             | For automating the `make install` shortcut             |
-| **Tree**             | Optional, only for regenerating `tree.txt` via `make tree` |
+|                     |                                                                |
+| ------------------- | -------------------------------------------------------------- |
+| **Python**          | 3.14 or higher                                                 |
+| **Package Manager** | [uv](https://github.com/astral-sh/uv)                          |
+| **Make**            | For automating the `make install` shortcut                     |
+| **Tree**            | Optional, only for regenerating `docs/TREE.md` via `make tree` |
 
 ## Install
 
@@ -35,6 +35,6 @@ make install
 ## Next steps
 
 * Upload the Arduino sketch (`arduino_usb_to_led/arduino_usb_to_led.ino`) and run
-  the visualizer — see **Usage** in [README.md](README.md).
+  the visualizer — see **Usage** in [README.md](../README.md).
 * Building the project **from scratch** (empty directory, `uv init`, adding the
   libraries one by one, etc.)? See **[SETUP.md](SETUP.md)**.

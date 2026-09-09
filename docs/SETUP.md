@@ -9,7 +9,7 @@ How the project is assembled step by step, for anyone who wants to build it from
 * **uv :** Dependency / environment manager
 * **Make :** For the `make` shortcuts
 * **System :** Linux + PulseAudio (`pulseaudio-utils` for `parec` & `pactl`)
-* **Tree :** Optional, only for regenerating `tree.txt` via `make tree`
+* **Tree :** Optional, only for regenerating `docs/TREE.md` via `make tree`
 
 
 
@@ -28,7 +28,6 @@ uv init
 automatically. It does **not** create the virtual environment yet — `.venv` is
 created on the first `uv add` / `uv run` / `uv sync` (see steps 3–4).
 
-> Use `uv init --lib` if you prefer the `src/` layout used by this project
 > (the console script points at `python_audio_to_arduino_visualizer.main:main`).
 
 
