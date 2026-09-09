@@ -42,7 +42,7 @@ Instead of relying on basic volume triggers, this tool uses digital signal proce
 | **Operating System** | Linux (Uses PulseAudio subsystem).                         |
 | **PulseAudio**       | For capturing system audio.                                |
 | **System Packages**  | `pulseaudio-utils` (for `parec` & `pactl`).                |
-| **Python**           | Python 3.14 or higher.                                |
+| **Python**           | Python 3.14 or higher.                                     |
 | **Package Manager**  | [uv](https://github.com/astral-sh/uv) (Lightning-fast PM). |
 | **Make**             | For automating installation and running the visualizer.    |
 
@@ -50,43 +50,33 @@ Instead of relying on basic volume triggers, this tool uses digital signal proce
 
 <br><br>
 
-## Installation
-
-See **[INSTALL.md](INSTALL.md)** — clone + `make install` (create the virtual environment and sync dependencies with `uv`).
-
-
-> **For the curious:** wonder how this project was first built from an empty
-> directory — `uv init`, adding the libraries one by one, and all the rest?
-> That's written up in **[SETUP.md](SETUP.md)**.
-
-
-
-<br><br>
-
 ## Usage
 
-First, upload the `arduino_usb_to_led/arduino_usb_to_led.ino` sketch to your Arduino via the Arduino IDE.
-
-Once the hardware is ready, start the visualizer:
+1. Upload `arduino_usb_to_led/arduino_usb_to_led.ino` to your Arduino (pins 9/10/11, baud 115200).
+2. Start the visualizer:
 
 ```bash
-# Run the interactive CLI (auto-prompts for port and audio device)
 make run
-
 ```
 
-You can also run it in a single command by passing arguments directly:
+It auto-detects your serial port and audio source; pass `--port` / `--device` to skip the prompts. Stop anytime with `Ctrl+C`.
+
+## Install
 
 ```bash
-uv run python-audio-to-arduino-visualizer --port /dev/ttyUSB0 --device alsa_output.pci-0000.analog-stereo.monitor
-
+git clone https://github.com/mefamex/python-audio-to-arduino-visualizer.git
+cd python-audio-to-arduino-visualizer
+make install
 ```
 
-**Helpful Commands:**
+`make install` runs `uv sync` — creates `.venv` and installs the CLI.
 
-* `uv run python-audio-to-arduino-visualizer --list-ports` (Find your Arduino port)
-* `uv run python-audio-to-arduino-visualizer --list-devices` (Find your audio monitor)
-* `uv run python-audio-to-arduino-visualizer --help` (View all configuration flags like sample rate and chunk size)
+## Setup
+
+Built the project from scratch (empty directory, `uv init`, adding the libraries one by one)? That's written up in the Setup guide.
+
+> **Note:** The docs cover everything in detail — read them in order:
+> **[docs/USAGE.md](docs/USAGE.md)** → **[docs/INSTALL.md](docs/INSTALL.md)** → **[docs/SETUP.md](docs/SETUP.md)**.
 
 <br><br>
 
@@ -123,38 +113,11 @@ Note:
 
 ## Project Structure
 
-`make tree`
-
-```text
-Project Structure:
-
-PYTHON AUDIO TO ARDUINO VISUALIZER
-.
-├── arduino_usb_to_led
-│   └── arduino_usb_to_led.ino
-├── INSTALL.md
-├── LICENSE
-├── makefile
-├── pyproject.toml
-├── README.md
-├── SETUP.md
-├── src
-│   └── python_audio_to_arduino_visualizer
-│       ├── audio_analyzer.py
-│       ├── config.py
-│       ├── __init__.py
-│       ├── list_devices.py
-│       ├── list_ports.py
-│       ├── main.py
-│       ├── ro_audio.py
-│       └── ui.py
-├── tree.txt
-└── uv.lock
-
-4 directories, 17 files
-
-Generated on 2026-09-09 23:19:13
 ```
+make tree
+```
+
+The up-to-date markdown tree lives in **[docs/TREE.md](docs/TREE.md)** — refresh it with `make tree`.
 
 <br><br>
 
