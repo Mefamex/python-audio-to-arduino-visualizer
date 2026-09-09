@@ -13,14 +13,59 @@ from python_audio_to_arduino_visualizer.audio_analyzer import AudioAnalyzer
 from python_audio_to_arduino_visualizer.list_devices import init_device, print_devices
 from python_audio_to_arduino_visualizer.list_ports import init_port, print_ports
 from python_audio_to_arduino_visualizer.ro_audio import open_audio, read_audio_chunk
+from python_audio_to_arduino_visualizer.ui import (
+    WIDTH,
+    cyan,
+    dim,
+    fail,
+    green,
+    header,
+    hint_for,
+    red,
+    selection_box,
+    step,
+)
 
-RETRY_DELAYS = [3, 5, 10, 30, 60]  # seconds
+RETRY_INTERVAL = config.RETRY_INTERVAL
+RETRY_TIMEOUT = config.RETRY_TIMEOUT
+
+
+def _now() -> str:
+    return time.strftime("[%H:%M:%S]")
+
+
+def _classify(error: BaseException | object | None) -> str:
+    """Short label telling whether Arduino or the audio source failed."""
+    text = str(error).lower() if isinstance(error, BaseException) else ""
+    if any(
+        key in text
+        for key in (
+            "could not open port",
+            "/dev/tty",
+            "ttyusb",
+            "ttyacm",
+            "serial",
+            "arduino",
+            "write failed",
+            "input/output error",
+        )
+    ):
+        return "NO ARDUINO connection found"
+    if any(key in text for key in ("parec", "pulseaudio", "audio stream")):
+        return "NO AUDIO source found"
+    return "Connection lost"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="PulseAudio music visualizer for three Arduino LEDs")
-    parser.add_argument("--port", default=config.SERIAL_PORT, help="Arduino serial port")
-    parser.add_argument("--device", default=config.DEVICE_NAME, help="PulseAudio monitor source")
+    parser = argparse.ArgumentParser(
+        description="PulseAudio music visualizer for three Arduino LEDs"
+    )
+    parser.add_argument(
+        "--port", default=config.SERIAL_PORT, help="Arduino serial port"
+    )
+    parser.add_argument(
+        "--device", default=config.DEVICE_NAME, help="PulseAudio monitor source"
+    )
     parser.add_argument(
         "--sample-rate",
         type=int,
@@ -39,47 +84,69 @@ def parse_args() -> argparse.Namespace:
         default=config.BAUD_RATE,
         help="Arduino serial baud rate (default: 115200)",
     )
-    parser.add_argument("--list-devices", action="store_true", help="List PulseAudio sources and exit")
-    parser.add_argument("--list-ports", action="store_true", help="List Arduino serial ports and exit")
+    parser.add_argument(
+        "--list-devices", action="store_true", help="List PulseAudio sources and exit"
+    )
+    parser.add_argument(
+        "--list-ports", action="store_true", help="List Arduino serial ports and exit"
+    )
     return parser.parse_args()
 
 
 def initialize_system(args_port: str, args_device: str) -> tuple[str, str]:
-    print("\n\n")
-    time.sleep(0.5)
-    print("====================================================")
-    print(" PulseAudio Music Visualizer for Three Arduino LEDs")
-    print("====================================================\n")
+    header("PulseAudio Music Visualizer for Three Arduino LEDs")
 
-    time.sleep(0.5)
-    print("\tINITIALIZING ARDUINO SERIAL PORTS...\n")
+    step("Searching Arduino serial ports")
+    print()
     port = init_port(args_port)
-    print("\n====================================================\n")
+    selection_box("Selected port", port)
 
-    time.sleep(0.5)
-    print("\tINITIALIZING PULSEAUDIO SOURCES...\n")
+    step("Searching PulseAudio sources")
+    print()
     device = init_device(args_device)
-    print("\n====================================================\n")
+    selection_box("Selected device", device)
 
     return port, device
 
 
-def run(port: str, device: str, sample_rate: int, chunk_size: int, baud_rate: int) -> None:
-    print(f"Connecting to port {port}...")
+def run(
+    port: str,
+    device: str,
+    sample_rate: int,
+    chunk_size: int,
+    baud_rate: int,
+    printDebug: bool = True,
+) -> None:
+    line = cyan("=" * WIDTH)
+    if printDebug:
+        print("\nConnecting...")
+        print(f"  • Port:   {port}")
+        print(f"  • Device: {device}")
     process: subprocess.Popen[bytes] | None = None
 
     try:
         with serial.Serial(port, baud_rate, timeout=0.2) as arduino:
             time.sleep(2)
-            print("Arduino connection successful!")
-            print("Starting PulseAudio (parec)...")
 
             process = open_audio(device, sample_rate)
             if process.stdout is None:
                 raise RuntimeError("parec failed to create an audio stream.")
 
             analyzer = AudioAnalyzer(sample_rate=sample_rate, chunk_size=chunk_size)
-            print("Audio-reactive LEDs are running. Press Ctrl+C to exit.")
+
+            # Always announce success: retries stay silent on failure,
+            # but a (re)connection must be visible.
+            print("")
+            print(line)
+            print(f" Connecting to port {port}...")
+            print(f" {green('✔')} Arduino connection successful!")
+            print(f" {green('✔')} Starting PulseAudio (parec)...")
+            print(
+                f" {green('✔')} Audio-reactive LEDs are running. Press Ctrl+C to exit."
+            )
+            print(f" {dim('↻ Auto-retry on: every 5s for 5 min if the link drops.')}")
+            print(line)
+            print("")
 
             while True:
                 raw_data = read_audio_chunk(process.stdout, chunk_size * 2)
@@ -93,7 +160,6 @@ def run(port: str, device: str, sample_rate: int, chunk_size: int, baud_rate: in
     except KeyboardInterrupt:
         print("\nClosing program gracefully...")
     except (OSError, serial.SerialException, RuntimeError) as error:
-        print(f"Error: {error}", file=sys.stderr)
         raise SystemExit(1) from error
     finally:
         if process is not None:
@@ -122,20 +188,27 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\n[INFO] Initialization aborted by user.")
         sys.exit(0)
+    except (RuntimeError, OSError, serial.SerialException) as error:
+        fail(str(error), hint_for(str(error)))
+        sys.exit(1)
 
-    # 2. Auto-Recovery Configuration (Exponential Backoff)
-    retry_delays = RETRY_DELAYS
-    retry_count = 0
+    # 2. Auto-Recovery: fixed interval (RETRY_INTERVAL) until RETRY_TIMEOUT.
+    first_failure: float | None = None
 
     # 3. Fault-Tolerant Main Loop
     while True:
         start_time = time.time()
         try:
-            print(f"\nConnecting... Port: {port} | Device: {device}")
-
             # Execute the main workflow (Runs continuously until an exception is raised)
-            run(port, device, args.sample_rate, args.chunk_size, args.baud_rate)
-
+            printdebug = True if first_failure is None else False
+            run(
+                port,
+                device,
+                args.sample_rate,
+                args.chunk_size,
+                args.baud_rate,
+                printDebug=printdebug,
+            )
             # Exit the loop if run() finishes gracefully without exceptions
             break
 
@@ -148,24 +221,36 @@ def main() -> None:
             if isinstance(e, SystemExit) and e.code == 0:
                 sys.exit(0)
 
-            # Uptime Check: If the system remained stable for over 10 seconds,
-            # consider it a fresh disconnect and reset the retry counter.
+            # Stable for a while -> treat the next failure as a fresh outage.
             if time.time() - start_time > 10:
-                retry_count = 0
+                first_failure = None
+            is_first = first_failure is None
+            if first_failure is None:
+                first_failure = time.time()
+            elapsed = time.time() - first_failure
 
-            # Extract the underlying error (since run() wraps exceptions in SystemExit)
-            actual_error = getattr(e, "__cause__", e) or e
-            print(f"\n[ERROR] Connection lost or process failed: {actual_error}")
+            # The original exception rides along as __cause__ for classification.
+            orig = getattr(e, "__cause__", None)
+            if orig is None and isinstance(e, Exception):
+                orig = e
+            label = _classify(orig)
 
-            if retry_count < len(retry_delays):
-                wait_time = retry_delays[retry_count]
-                print(
-                    f"🔄 Retrying with cached settings in {wait_time}s... (Attempt {retry_count + 1}/{len(retry_delays)})"
-                )
-                time.sleep(wait_time)
-                retry_count += 1
+            if is_first:
+                # Full detail only once per outage; retries stay compact.
+                sys.stdout.flush()
+                if orig is not None:
+                    print(f"✖ Error: {orig}", file=sys.stderr)
+                print(f"{red('=' * WIDTH, sys.stdout)}")
+            print(
+                f"{_now()} [ERROR] {label} (elapsed {int(elapsed)}s / {RETRY_TIMEOUT}s)"
+            )
+
+            if elapsed < RETRY_TIMEOUT:
+                time.sleep(RETRY_INTERVAL)
             else:
-                print("\n[FATAL] Maximum retry limit reached. Target device unreachable. Exiting.")
+                print(
+                    f"\n{_now()} [FATAL] Retry timeout reached ({RETRY_TIMEOUT}s). Giving up."
+                )
                 sys.exit(1)
 
 
