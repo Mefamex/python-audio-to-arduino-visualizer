@@ -4,9 +4,7 @@ SERIAL_PORT = ""  # e.g., "/dev/ttyUSB0" or "/dev/ttyACM0"
 BAUD_RATE = 115200
 SAMPLE_RATE = 16000
 CHUNK_SIZE = 300
-DEVICE_NAME = (
-    ""  # e.g., "alsa_output.pci-0000_00_1f.3.analog-stereo.monitor" or "bluez_output.A8_99_DC_52_C7_A8.1.monitor"
-)
+DEVICE_NAME = ""  # e.g., "alsa_output.pci-0000_00_1f.3.analog-stereo.monitor" or "bluez_output.A8_99_DC_52_C7_A8.1.monitor"
 
 # LED smoothing / flash-speed range: how fast the LEDs react to audio changes.
 # A single smoothing factor is derived from the current audio "activeness" and
@@ -38,3 +36,9 @@ DEVICE_NAME = (
 SMOOTHING_MIN = 0.1
 SMOOTHING_SCALE = 2.5
 SMOOTHING_MAX = 0.85
+
+# Auto-retry: fixed-interval reconnect attempts after a drop/crash.
+# RETRY_INTERVAL: seconds to wait between attempts.
+# RETRY_TIMEOUT: give up after this many seconds of failing (5 min = 300).
+RETRY_INTERVAL = 5
+RETRY_TIMEOUT = 300
